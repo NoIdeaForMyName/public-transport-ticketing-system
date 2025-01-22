@@ -1,0 +1,39 @@
+WAZNE:
+trzeba dodac adminowi funkcje edycji cennika biletow
+
+
+FUNKCJONALNOSCI KLIENTA:
+wazne: kasownik nie zna swojego ID (zna tylko IPv4)
+
+pobierz_cennik(); -> json - cena biletu jednorazowego: {id ceny, cena}, cena biletu czasowego: [{id ceny, cena za 15 min}, {id ceny, cena za 30 min}, {...}] # wywolywane przed kazda proba zakupu biletu w kasowniku
+doladuj_karte(RFID, kwota); -> udalo sie lub nie
+kup_bilet_czasowy(RFID, czas_kupna, id_ceny_biletu_czasowego); -> udalo sie lub nie
+kup_bilet_jednorazowy(RFID, IP_kasownika, id_ceny_biletu_jednorazowego); -> udalo sie lub nie
+sprawdz_aktywne_bilety(RFID); -> json - dla czasowych: tylko dane z biletu; dla jednorazowych: id pojazdu
+
+
+
+FUNKCJONALNOSCI ADMINISTRATORA:
+
+pobierz_dane_wszystkich_pojazdow(); -> json - id, rejestracja, id obecnego kursu(opcjonalnie)
+dodaj_pojazd(rejestracja); -> udalo sie lub nie (np. taki pojazd juz istnieje)
+usun_pojazd(rejestracja); -> udalo sie lub nie
+zakoncz_kurs(rejestracja, czas_zakonczenia); -> udalo sie lub nie (np. pojazd nie ma aktywnych kursow)
+rozpocznij_kurs(rejestracja, czas_rozpoczecia); -> udalo sie lub nie
+
+pobierz_dane_wszystkich_kasownikow(); -> json - id, ipv4, {dane_pojazdu: id, rejestracja}
+dodaj_kasownik(ipv4, rejestracja_pojazdu(opcjonalnie)); -> udalo sie lub nie (np. taki kasownik juz istnieje)
+usun_kasownik(ipv4); -> udalo sie lub nie
+zmien_pojazd_kasownika(ipv4, rejestracja_pojazdu(opcjonalnie)); -> udalo sie lub nie
+
+pobierz_cennik(); -> struktura jak wyzej
+dodaj_bilet_czasowy(czas_waznosci, cena); -> udalo sie lub nie (np. istnieje juz bilet o danym czasie waznosci)
+edytuj_bilet_czasowy(id_biletu, cena); -> udalo sie lub nie # mozna edytowac tylko cene, bo jego czas waznosci jest kluczem kandydujacym
+usun_bilet_czasowy(id_biletu); -> udalo sie lub nie
+edytuj_bilet_jednorazowy(id_biletu, cena); -> udalo sie lub nie
+
+NIE MA OPERACJI DODAWANIA I USUWANIA DLA BILETU JEDNORAZOWEGO, BO ZAKLADAM, ZE W BAZIE BEDZIE ZAWSZE TYLKO JEDEN
+
+
+DO ZASTANOWIENIA:
+czy w przypadku usuwania pojazdu, chcemy, zeby administrator byl jakkolwiek informowany, jezeli istnieja kasowniki przypisane do danego pojazdu, czy pp. usuwamy pojazd mimo wszystko, a dla kasownikow SET NULL dla fk_pojazd i gitara?
