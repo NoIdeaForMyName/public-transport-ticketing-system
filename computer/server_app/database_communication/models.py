@@ -1,6 +1,32 @@
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey, Table, DateTime
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+import json, decimal
+
+
+from datetime import datetime
+class AlchemyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj.__class__, DeclarativeMeta):
+            # Convert SQLAlchemy model to dictionary
+            fields = {}
+            for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                if field == 'registry':
+                    continue
+                data = obj.__getattribute__(field)
+                try:
+                    if type(data) == decimal.Decimal:
+                        data = float(data)
+                    if type(data) == datetime:
+                        data = datetime.strftime(data, "%Y.%m.%d %H:%M:%S")
+                    json.dumps(data)
+                    fields[field] = data
+                except TypeError:
+                    print("ERROR: ", data)
+                    fields[field] = None
+            return fields
+        return json.JSONEncoder.default(self, obj)
+
 
 Base = declarative_base()
 
@@ -8,7 +34,7 @@ class Card(Base):
     __tablename__ = "Cards"
     id = Column(Integer, primary_key=True, autoincrement=True)
     card_RFID = Column(String(12), unique=True, nullable=False)
-    card_balance = Column(Numeric(precision=10, scale=2), nullable=False)
+    card_balance = Column(Numeric(precision=10, scale=2), nullable=False, default=0.)
     time_tickets = relationship(
         "TimeTicket", back_populates="card"
     )

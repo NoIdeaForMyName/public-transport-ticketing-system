@@ -22,11 +22,11 @@ CREATE TABLE IF NOT EXISTS "Cards" (
 
 CREATE TABLE IF NOT EXISTS "Courses" (
 	"id" INTEGER NOT NULL UNIQUE,
-	"fk_vehicle_courses" INTEGER NOT NULL,
+	"fk_vehicle_course" INTEGER NOT NULL,
 	"course_start_datetime" DATETIME NOT NULL DEFAULT (datetime('now')),
 	"course_end_datetime" DATETIME,
 	PRIMARY KEY("id"),
-	FOREIGN KEY ("fk_vehicle_courses") REFERENCES "Vehicles"("id")
+	FOREIGN KEY ("fk_vehicle_course") REFERENCES "Vehicles"("id")
 	ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
@@ -50,15 +50,16 @@ CREATE TABLE IF NOT EXISTS "CourseTickets" (
 	ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-CREATE TABLE IF NOT EXISTS "CurseTicketPrices" (
+CREATE TABLE IF NOT EXISTS "CourseTicketPrices" (
 	"id" INTEGER NOT NULL UNIQUE,
 	"course_ticket_amount" NUMERIC NOT NULL,
 	PRIMARY KEY("id")
 );
+INSERT INTO "CourseTicketPrices" ("course_ticket_amount") VALUES (5);
 
 CREATE TABLE IF NOT EXISTS "TimeTicketPrices" (
 	"id" INTEGER NOT NULL UNIQUE,
-	"time_ticket_validity_time" INTEGER NOT NULL UNIQUE,
+	"time_ticket_validity_period" INTEGER NOT NULL UNIQUE,
 	"time_ticket_amount" NUMERIC NOT NULL,
 	PRIMARY KEY("id")
 );
