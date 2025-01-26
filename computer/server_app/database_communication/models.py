@@ -97,7 +97,7 @@ class Course(Base):
     )
 
 class CourseTicket(Base):
-    __tablename__ = "CourseTicket"
+    __tablename__ = "CourseTickets"
     fk_course_ticket = Column(Integer, ForeignKey("Courses.id"), primary_key=True)
     fk_card_course_ticket = Column(Integer, ForeignKey("Cards.id"), primary_key=True)
     course = relationship(

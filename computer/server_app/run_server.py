@@ -72,4 +72,4 @@ specify_db_path("./../database/public_transport_ticketing_system.db")
 
 # CLIENT TESTING...
 # TODO
-
+#buy_course_ticket("123456789012", "192.168.0.2")

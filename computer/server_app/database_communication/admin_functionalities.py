@@ -1,23 +1,5 @@
 from database_communication.common_functions import *
 
-'''
-pobierz_dane_wszystkich_pojazdow(); -> json - id, rejestracja, id obecnego kursu(opcjonalnie)
-dodaj_pojazd(rejestracja); -> udalo sie lub nie (np. taki pojazd juz istnieje)
-usun_pojazd(rejestracja); -> udalo sie lub nie
-zakoncz_kurs(rejestracja, czas_zakonczenia); -> udalo sie lub nie (np. pojazd nie ma aktywnych kursow)
-rozpocznij_kurs(rejestracja, czas_rozpoczecia); -> udalo sie lub nie
-
-pobierz_dane_wszystkich_kasownikow(); -> json - id, ipv4, {dane_pojazdu: id, rejestracja}
-dodaj_kasownik(ipv4, rejestracja_pojazdu(opcjonalnie)); -> udalo sie lub nie (np. taki kasownik juz istnieje)
-usun_kasownik(ipv4); -> udalo sie lub nie
-zmien_pojazd_kasownika(ipv4, rejestracja_pojazdu(opcjonalnie)); -> udalo sie lub nie
-
-pobierz_cennik(); -> struktura jak wyzej
-dodaj_bilet_czasowy(czas_waznosci, cena); -> udalo sie lub nie (np. istnieje juz bilet o danym czasie waznosci)
-edytuj_bilet_czasowy(id_biletu, cena); -> udalo sie lub nie # mozna edytowac tylko cene, bo jego czas waznosci jest kluczem kandydujacym
-usun_bilet_czasowy(id_biletu); -> udalo sie lub nie
-edytuj_bilet_jednorazowy(id_biletu, cena); -> udalo sie lub nie
-'''
 
 ##############################################################################################################################
 #functionalities related to vehicles:
@@ -26,7 +8,7 @@ edytuj_bilet_jednorazowy(id_biletu, cena); -> udalo sie lub nie
 def fetch_all_vehicles():
     with db_session() as session:
         active_courses = select(Course).where(Course.course_end_datetime == null()).subquery()
-        return (
+        to_return = (
             session.query(
                 Vehicle,
                 func.min(active_courses.c.id).label("Courses_id") # could be any function (min, max, first etc.) because it will always be only one Course entry available
@@ -35,6 +17,14 @@ def fetch_all_vehicles():
             .group_by(Vehicle)
             .all()
         )
+        return {"vehicle_data": list(map(lambda v_d: vehicle_data_to_dict(*v_d), to_return))}, True
+
+def vehicle_data_to_dict(vehicle: Vehicle, course_id: int | None):
+    return {
+        "id": vehicle.id,
+        "plate_number": vehicle.vehicle_plate_number,
+        "course_id": course_id
+    }
 '''
 select vehicle.id, vehicle.plate_nb, first(course.id) from
 vehicles left join (select course.id from courses where course.end_datetime = NULL) on vehicle.id = course.id
@@ -47,14 +37,22 @@ def add_vehicle(plate_nb: str):
         vehicle_plate_number = plate_nb
     )
     with db_session() as session:
-        session.add(vehicle_db)
-        session.commit()
+        try:
+            session.add(vehicle_db)
+            session.commit()
+            return {"message": f"Vehicle with plate number: {plate_nb} added succesfully"}, True
+        except IntegrityError:
+            return {"error": f"Vehicle with plate number: {plate_nb} already exists or given plate number is invalid"}, False
 
 # delete vehicle
 def delete_vehicle(plate_nb: str):
     with db_session() as session:
-        session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb).delete()
+        stmt = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb)
+        if not stmt.first():
+            return {"error": f"No vehicle with plate number: {plate_nb}"}, False
+        stmt.delete()
         session.commit()
+    return {"message": f"Vehicle with plate number: {plate_nb} deleted succesfully"}, True
 
 # end course
 def end_course(plate_nb: str, end_datetime: datetime):
@@ -63,18 +61,26 @@ def end_course(plate_nb: str, end_datetime: datetime):
             .where(Course.course_end_datetime == null())\
             .join(Vehicle, Course.fk_vehicle_course == Vehicle.id)\
             .where(Vehicle.vehicle_plate_number == plate_nb).first()
+        if not course_to_end:
+            return {"error": f"No active courses found for vehicle: {plate_nb}"}, False
         course_to_end.course_end_datetime = end_datetime
         session.commit()
+    return {"message": f"Course of vehicle: {plate_nb} succesfully ended"}, True
 
 # start new course
 def start_course(plate_nb: str, start_datetime: datetime):
     with db_session() as session:
+        vehicle = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb).first()
+        if not vehicle:
+            return {"error": f"No vehicle with plate number: {plate_nb} found"}, False
+        vehicle_id = vehicle.id
         course_db = Course(
-                fk_vehicle_course = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb).first().id,
+                fk_vehicle_course = vehicle_id,
                 course_start_datetime = start_datetime
             )
         session.add(course_db)
-        session.commit()     
+        session.commit() 
+    return {"message": f"New course for vehicle: {plate_nb} succesfully started"}, True   
 ##############################################################################################################################
 
 
@@ -85,38 +91,64 @@ def start_course(plate_nb: str, start_datetime: datetime):
 # get all ticket validators
 def get_all_ticket_validators():
     with db_session() as session:
-        return (
+        to_return = (
             session.query(TicketValidator)
                 .options(joinedload(TicketValidator.vehicle))
                 .all()
         )
+        return {"ticket_validators": list(map(ticket_validator_data_to_dict, to_return))}, True
+
+def ticket_validator_data_to_dict(validator: TicketValidator):
+    return {
+        "id": validator.id,
+        "ipv4": validator.validator_ip_address,
+        "vehicle_id": validator.vehicle.id,
+        "vehicle_plate_nb": validator.vehicle.vehicle_plate_number
+    }
 
 # add ticket validator
 def add_ticket_validator(ipv4: str, vehicle_plate_nb: str | None):
     with db_session() as session:
         vehicle_id = None
         if vehicle_plate_nb:
-            vehicle_id = session.query(Vehicle).filter_by(vehicle_plate_number=vehicle_plate_nb).first().id
+            vehicle = session.query(Vehicle).filter_by(vehicle_plate_number=vehicle_plate_nb).first()
+            if not vehicle:
+                return {"error": f"No vehicle with plate number: {vehicle_plate_nb} found"}, False
+            vehicle_id = vehicle.id
         ticket_validator_db = TicketValidator(
             validator_ip_address = ipv4,
             fk_vehicle_validator = vehicle_id
         )
-        session.add(ticket_validator_db)
-        session.commit()
+        try:
+            session.add(ticket_validator_db)
+            session.commit()
+            return {"message": f"Ticket validator with ip address: {ipv4} succesfully added"}, True
+        except IntegrityError:
+            return {"error": f"Ticket validator with ip address: {ipv4} already exists or given ip address is invalid"}, False 
 
 # delete ticket validator
 def delete_ticket_validator(ipv4: str):
     with db_session() as session:
-        session.query(TicketValidator).filter_by(validator_ip_address=ipv4).delete()
+        stmt = session.query(TicketValidator).filter_by(validator_ip_address=ipv4)
+        if not stmt.first():
+            return {"error": f"No ticket validator with ip address: {ipv4}"}, False 
+        stmt.delete()
         session.commit()
+        return {"message": f"Ticket validator with ip address: {ipv4} succesfully deleted"}, True
 
 # change validator's vehicle
 def change_validators_vehicle(ipv4, new_vehicle_plate_nb: str | None):
     with db_session() as session:
-        new_vehicle_id = session.query(Vehicle).filter_by(vehicle_plate_number=new_vehicle_plate_nb).first().id
+        new_vehicle = session.query(Vehicle).filter_by(vehicle_plate_number=new_vehicle_plate_nb).first()
+        if not new_vehicle:
+            return {"error": f"No vehicle with plate number: {new_vehicle_plate_nb} found"}, False
+        new_vehicle_id = new_vehicle.id
         to_update_validator = session.query(TicketValidator).filter_by(validator_ip_address=ipv4).first()
+        if not to_update_validator:
+            return {"error": f"No ticket validator with ip address: {ipv4}"}, False 
         to_update_validator.fk_vehicle_validator = new_vehicle_id
         session.commit()
+        return {"message": f"Ticket validator with ip address: {ipv4} succesfully updated, new vehicle plate number: {new_vehicle_plate_nb}"}, True 
 ##############################################################################################################################
 
 
@@ -134,27 +166,42 @@ def add_time_ticket_to_offer(validity_period: int, price: float):
         time_ticket_amount = price
     )
     with db_session() as session:
-        session.add(time_ticket_price_db)
-        session.commit()
+        try:
+            session.add(time_ticket_price_db)
+            session.commit()
+            return {"message": f"Time ticket type with validity period {validity_period} succesfully added"}, True
+        except IntegrityError:
+            return {"error": f"Time ticket type with validity period: {validity_period} already exists or given validity period is invalid"}, False
 
 # edit time ticket in offer
 def edit_time_ticket_in_offer(ticket_id: int, new_price: float):
     with db_session() as session:
-        session.query(TimeTicketPrice).filter_by(id=ticket_id).first().time_ticket_amount = new_price
+        time_ticket_to_edit = session.query(TimeTicketPrice).filter_by(id=ticket_id).first()
+        if not time_ticket_to_edit:
+            return {"error": f"No time ticket type with id: {ticket_id}"}, False
+        time_ticket_to_edit.time_ticket_amount = new_price
         session.commit()
+        return {"message": f"Time ticket type with id: {ticket_id} succesfully updated, new price: {new_price}"}, True
 
 # delete time ticket from offer
 def delete_time_ticket_from_offer(ticket_id: int):
     with db_session() as session:
-        session.query(TimeTicketPrice).filter_by(id=ticket_id).delete()
+        stmt = session.query(TimeTicketPrice).filter_by(id=ticket_id)
+        if not stmt.first():
+            return {"error": f"No time ticket type with id: {ticket_id}"}, False
+        stmt.delete()
         session.commit()
+        return {"message": f"Time ticket type with id: {ticket_id} succesfully deleted"}, True
 
 # edit single-use ticket in offer
 def edit_course_ticket_in_offer(ticket_id: int, new_price: float):
     with db_session() as session:
-        session.query(CourseTicketPrice).filter_by(id=ticket_id).first().course_ticket_amount = new_price
+        course_ticket_to_edit = session.query(CourseTicketPrice).filter_by(id=ticket_id).first()
+        if not course_ticket_to_edit:
+            return {"error": f"No course ticket type with id: {ticket_id}"}, False
+        course_ticket_to_edit.course_ticket_amount = new_price
         session.commit()
-
+        return {"message": f"Course ticket type with id: {ticket_id} succesfully updated, new price: {new_price}"}, True
 ##############################################################################################################################
 
 
@@ -165,7 +212,15 @@ def edit_course_ticket_in_offer(ticket_id: int, new_price: float):
 # get all RFID cards
 def get_all_RFID_cards():
     with db_session() as session:
-        return session.query(Card).all()
+        to_return = session.query(Card).all()
+        return {"cards": list(map(card_to_dict, to_return))}, True
+
+def card_to_dict(card: Card):
+    return {
+        "id": card.id,
+        "RFID": card.card_RFID,
+        "balance": card.card_balance
+    }
 
 # add new RFID card
 def add_RFID_card(RFID: str):
@@ -173,11 +228,19 @@ def add_RFID_card(RFID: str):
             card_RFID = RFID
         )
     with db_session() as session:
-        session.add(card_db)
-        session.commit()
+        try:
+            session.add(card_db)
+            session.commit()
+            return {"message": f"Card with RFID: {RFID} added succesfully"}, True
+        except IntegrityError:
+            return {"error": f"Card with RFID: {RFID} already exists or given RFID is invalid"}, False
 
 # delete RFID card
 def delete_RFID_card(RFID: str):
     with db_session() as session:
-        session.query(Card).filter_by(card_RFID=RFID).delete()
+        stmt = session.query(Card).filter_by(card_RFID=RFID)
+        if not stmt.first():
+            return {"error": f"No card with RFID: {RFID}"}, False
+        stmt.delete()
         session.commit()
+        return {"message": f"Card with RFID: {RFID} deleted succesfully"}, True
