@@ -52,9 +52,19 @@ class HomeView(AbstractFrame):
             text="Zarządzanie kasownikami",
             style="HugeButton.TButton",
             width=button_width,
-            command=lambda: controller.show_view("ValidatorsView")
+            command=lambda: controller.show_view("TicketValidatorsView")
         )
         validator_btn.grid(row=3, column=0, pady=10)
+
+        # Ticket validator management button - centered
+        card_btn = ttk.Button(
+            self,
+            text="Zarządzanie kartami",
+            style="HugeButton.TButton",
+            width=button_width,
+            command=lambda: controller.show_view("CardsView")
+        )
+        card_btn.grid(row=4, column=0, pady=10)
 
     def on_appear(self):
         print("Home view appeared")

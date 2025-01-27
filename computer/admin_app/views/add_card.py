@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from func.ticket_validators import add_ticket_validator
+from func.cards import add_card
 from config import APP_FONT
 from .common import AbstractFrame
 
-class AddTicketValidatorView(AbstractFrame):
+
+class AddCardView(AbstractFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         
@@ -19,57 +20,60 @@ class AddTicketValidatorView(AbstractFrame):
             self,
             text="← Wstecz",
             style="SmallButton.TButton",
-            command=lambda: controller.show_view("TicketValidatorsView")
+            command=lambda: controller.show_view("CardsView")
         )
         back_btn.grid(row=0, column=0, padx=10, pady=5, sticky="W")
 
         # Title in the center
         title_label = ttk.Label(
             self,
-            text="Dodaj Kasownik",
+            text="Dodaj kartę",
             font=APP_FONT,
         )
         title_label.grid(row=0, column=0, pady=5, sticky="N")
 
+        # Create a frame for the form elements
         form_frame = ttk.Frame(self)
         form_frame.grid(row=2, column=0, pady=20)
         
-        ip_label = ttk.Label(
+        # RFID label and entry
+        rfid_label = ttk.Label(
             form_frame,
-            text="Ip kasownika:",
+            text="Numer RFID:",
             font=APP_FONT
         )
-        ip_label.grid(row=0, column=0, padx=5, pady=5, sticky="E")
+        rfid_label.grid(row=0, column=0, padx=5, pady=5, sticky="E")
         
-        self.ip_entry = ttk.Entry(
+        self.rfid_entry = ttk.Entry(
             form_frame,
             font=APP_FONT
         )
-        self.ip_entry.grid(row=0, column=1, padx=5, pady=5, sticky="W")
+        self.rfid_entry.grid(row=0, column=1, padx=5, pady=5, sticky="W")
         
+        # Add card button
         add_btn = ttk.Button(
             form_frame,
-            text="Dodaj kasownik",
+            text="Dodaj kartę",
             style="DefaultButton.TButton",
-            command=self._add_ticket_validator
+            command=self._add_card
         )
         add_btn.grid(row=1, column=0, columnspan=2, pady=20)
 
-    def _add_ticket_validator(self):
-        ip_adress = self.ip_entry.get().strip()
+    def _add_card(self):
+        rfid = self.rfid_entry.get().strip()
         
-        if not ip_adress:
-            messagebox.showerror("Błąd", "Proszę wprowadzić numer ip.")
+        if not rfid:
+            messagebox.showerror("Błąd", "Proszę wprowadzić numer RFID.")
             return
             
-        if add_ticket_validator(ip_adress):
-            messagebox.showinfo("Dodano kasownik", 
-                              f"Kasownik o ip {ip_adress} został dodany.")
-            self.ip_entry.delete(0, tk.END)  # Clear the entry
-            self.controller.show_view("TicketValidatorsView")
+        if add_card(rfid):
+            messagebox.showinfo("Dodano kartę", 
+                              f"Karta o numerze RFID {rfid} została dodana.")
+            self.rfid_entry.delete(0, tk.END)  # Clear the entry
+            self.controller.show_view("CardsView")
         else:
             messagebox.showerror("Błąd", 
-                               f"Kasownik o ip {ip_adress} już istnieje.")
+                               f"Karta o numerze RFID {rfid} nie została dodana. Już istnieje w bazie danych")
 
     def on_appear(self):
-        self.ip_entry.delete(0, tk.END)  # Clear registration plate entry when view appears
+        self.rfid_entry.delete(0, tk.END)  # Clear RFID entry when view appears

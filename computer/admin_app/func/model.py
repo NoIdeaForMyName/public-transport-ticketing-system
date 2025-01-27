@@ -10,7 +10,6 @@ engine = create_engine(DB_ADRESS)
 # Create session factory and bind it to Base
 session = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
-# Base.query = session.query_property()
 
 class Card(Base):
     __tablename__ = "Cards"
@@ -88,7 +87,6 @@ class CourseTicket(Base):
     card = relationship(
         "Card", back_populates="course_tickets"
     )
-
 
 def create_db():
     Base.metadata.create_all(engine)

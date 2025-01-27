@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import func.ticket_validators as ticket_validators
+import func.cards as cards
 from config import APP_FONT
 from .common import AbstractFrame
 
 
-class TicketValidatorsView(AbstractFrame):
+class CardsView(AbstractFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         
@@ -35,36 +35,33 @@ class TicketValidatorsView(AbstractFrame):
         # Title (centered)
         title_label = ttk.Label(
             nav_frame,
-            text="Zarządzanie Kasownikami",
+            text="Zarządzanie kartami",
             font=APP_FONT,
             anchor="center"
         )
         title_label.grid(row=0, column=1)
         
-        # Add Vehicle button
+        # Add Card button
         add_btn = ttk.Button(
             nav_frame,
-            text="Dodaj Kasownik",
+            text="Dodaj Kartę",
             style="SmallButton.TButton",
-            command=self.add_ticket_validator
+            command=self.add_card
         )
         add_btn.grid(row=0, column=2, padx=(10, 0))
 
-        # Create main table frame
+        # Table frame with scrollbar
         table_frame = ttk.Frame(self)
         table_frame.grid(row=1, column=0, sticky="NSEW", padx=10, pady=5)
         table_frame.grid_rowconfigure(0, weight=1)
         table_frame.grid_columnconfigure(0, weight=1)
 
-        # Create canvas and scrollbar
         self.canvas = tk.Canvas(table_frame)
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
-        # Configure canvas
         self.canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Make the scrollable frame expand to canvas width
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(
@@ -73,7 +70,6 @@ class TicketValidatorsView(AbstractFrame):
             )
         )
         
-        # Make the canvas expand with window
         self.canvas.bind(
             "<Configure>",
             lambda e: self.canvas.itemconfig(
@@ -82,23 +78,20 @@ class TicketValidatorsView(AbstractFrame):
             )
         )
 
-        # Create the canvas window
         self.canvas_window = self.canvas.create_window(
             (0, 0),
             window=self.scrollable_frame,
             anchor="nw"
         )
 
-        # Grid the canvas and scrollbar
         self.canvas.grid(row=0, column=0, sticky="NSEW")
         scrollbar.grid(row=0, column=1, sticky="NS")
         
-        # Configure scrollable_frame columns
-        self.scrollable_frame.grid_columnconfigure(0, weight=2)  # Registration number
-        self.scrollable_frame.grid_columnconfigure(1, weight=1)  # Status
-        self.scrollable_frame.grid_columnconfigure(2, weight=3)  # Actions
+        # Configure columns
+        self.scrollable_frame.grid_columnconfigure(0, weight=2)  # RFID
+        self.scrollable_frame.grid_columnconfigure(1, weight=1)  # Balance
+        self.scrollable_frame.grid_columnconfigure(2, weight=2)  # Actions
 
-        # Populate data
         self.on_appear()
 
     def on_appear(self):
@@ -109,14 +102,14 @@ class TicketValidatorsView(AbstractFrame):
         # Add headers
         ttk.Label(
             self.scrollable_frame,
-            text="Adres IP",
+            text="RFID",
             font=APP_FONT,
             anchor="center"
         ).grid(row=0, column=0, padx=5, pady=5, sticky="EW")
         
         ttk.Label(
             self.scrollable_frame,
-            text="Pojazd",
+            text="Saldo",
             font=APP_FONT,
             anchor="center"
         ).grid(row=0, column=1, padx=5, pady=5, sticky="EW")
@@ -133,21 +126,22 @@ class TicketValidatorsView(AbstractFrame):
         separator.grid(row=1, column=0, columnspan=3, sticky="EW", pady=2)
         
         # Add data rows
-        ticket_validators_list = ticket_validators.get_all_ticket_validators()
-        for i, ticket_validator_one in enumerate(ticket_validators_list):  # start=2 because of header and separator
+        cards_data = cards.get_all_cards()
+        for i, card in enumerate(cards_data):
             draw_at_row = i * 2 + 2  # Account for separators
-            # Registration number (centered)
+            
+            # RFID (centered)
             ttk.Label(
                 self.scrollable_frame,
-                text=ticket_validator_one.ip_adress,
+                text=card.rfid,
                 font=APP_FONT,
                 anchor="center"
             ).grid(row=draw_at_row, column=0, padx=5, pady=5, sticky="EW")
 
-            # Status (centered)
+            # Balance (centered)
             ttk.Label(
                 self.scrollable_frame,
-                text=ticket_validator_one.vehicle_plate_number if ticket_validator_one.vehicle_plate_number else "Brak",
+                text=f"{card.balance:.2f} zł",
                 font=APP_FONT,
                 anchor="center"
             ).grid(row=draw_at_row, column=1, padx=5, pady=5, sticky="EW")
@@ -156,38 +150,28 @@ class TicketValidatorsView(AbstractFrame):
             actions_frame = ttk.Frame(self.scrollable_frame)
             actions_frame.grid(row=draw_at_row, column=2, padx=5, pady=5, sticky="EW")
             actions_frame.grid_columnconfigure(0, weight=1)  # Left padding
-            actions_frame.grid_columnconfigure(3, weight=1)  # Right padding
+            actions_frame.grid_columnconfigure(2, weight=1)  # Right padding
             
             # Delete button
             ttk.Button(
                 actions_frame,
                 text="Usuń",
                 style="SmallButton.TButton",
-                command=lambda v=ticket_validator_one: self.delete_ticket_validator(v)
+                command=lambda c=card: self.delete_card(c)
             ).grid(row=0, column=1, padx=2)
-
-            ttk.Button(
-                actions_frame,
-                text="Zmień pojazd",
-                style="SmallButton.TButton",
-                command=lambda v=ticket_validator_one: self.assign_to_vehicle(v)
-            ).grid(row=0, column=2, padx=2)
-
+            
             # Add separator after each row (except the last one)
-            if i < len(ticket_validators_list):
+            if i < len(cards_data):
                 separator = ttk.Separator(self.scrollable_frame, orient="horizontal", style="SmallSeparator.TSeparator")
                 separator.grid(row=draw_at_row+1, column=0, columnspan=3, sticky="EW", pady=1)
 
-    def add_ticket_validator(self):
-        self.controller.show_view("AddTicketValidatorView")
+    def add_card(self):
+        self.controller.show_view("AddCardView")
         
-    def delete_ticket_validator(self, validator: ticket_validators.TicketValidatorData):
-        if messagebox.askyesno("Potwierdzenie", f"Czy na pewno chcesz usunąć walidator o IP {validator.ip_adress}?"):
-            if ticket_validators.delete_ticket_validator(validator.id):  # Assuming there's a validators module with this function
-                messagebox.showinfo("Informacja", "Walidator został usunięty")
+    def delete_card(self, card: cards.CardData):
+        if messagebox.askyesno("Potwierdzenie", f"Czy na pewno chcesz usunąć kartę {card.rfid}?"):
+            if cards.delete_card(card.id):
+                messagebox.showinfo("Informacja", "Karta została usunięta")
                 self.on_appear()
             else:
-                messagebox.showerror("Błąd", "Nie udało się usunąć walidatora")
-        
-    def assign_to_vehicle(self, validator: ticket_validators.TicketValidatorData):
-        self.controller.show_view("AssignTicketValidatorView", validator=validator)
+                messagebox.showerror("Błąd", "Nie udało się usunąć karty")

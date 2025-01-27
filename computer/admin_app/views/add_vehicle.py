@@ -27,7 +27,7 @@ class AddVehicleView(AbstractFrame):
         title_label = ttk.Label(
             self,
             text="Dodaj pojazd",
-            style="SmallButton.TButton",
+            font=APP_FONT,
         )
         title_label.grid(row=0, column=0, pady=5, sticky="N")
 

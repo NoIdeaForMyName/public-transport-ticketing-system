@@ -7,10 +7,16 @@ class VehicleData:
     registration_number: str
     in_use: bool
 
-    def __init__(self, vehicle: Vehicle):
-        self.id = vehicle.id
-        self.registration_number = vehicle.vehicle_plate_number
-        self.in_use = get_active_course(vehicle.id) is not None
+    def __init__(self, vehicle: Optional[Vehicle], registration_number: str = ""):
+        if not vehicle:
+            self.id = -1
+            self.registration_number = registration_number
+            self.in_use = False
+            return
+        else:
+            self.id = vehicle.id
+            self.registration_number = vehicle.vehicle_plate_number
+            self.in_use = get_active_course(vehicle.id) is not None
 
 def get_active_course(vehicle_id: int) -> Optional[Course]:
     vehicle = session.query(Vehicle).get(vehicle_id)

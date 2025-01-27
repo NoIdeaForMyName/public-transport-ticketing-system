@@ -1,4 +1,4 @@
-from .model import TicketValidator, session
+from .model import TicketValidator, Vehicle, session
 
 class TicketValidatorData:
     id: int
@@ -9,8 +9,13 @@ class TicketValidatorData:
     def __init__(self, ticket_validator: TicketValidator):
         self.id = ticket_validator.id
         self.ip_adress = ticket_validator.validator_ip_address
-        self.vehicle_id = ticket_validator.fk_vehicle_validator if ticket_validator.fk_vehicle_validator else -1
-        self.vehicle_plate_number = TicketValidator.vehicle.vehicle_plate_number if ticket_validator.fk_vehicle_validator else ""
+
+        if ticket_validator.vehicle:
+            self.vehicle_id = ticket_validator.fk_vehicle_validator
+            self.vehicle_plate_number = ticket_validator.vehicle.vehicle_plate_number
+        else:
+            self.vehicle_id = -1
+            self.vehicle_plate_number = ""
 
 def get_all_ticket_validators() -> list[TicketValidatorData]:
     return [TicketValidatorData(validator) for validator in session.query(TicketValidator).all()]
@@ -29,10 +34,17 @@ def add_ticket_validator(ip_adress: str) -> bool:
 
 def update_ticket_validator(validator_id: int, vehicle_id: int) -> bool:
     validator = session.query(TicketValidator).get(validator_id)
+    print(validator)
     if not validator:
         return False
-
-    validator.fk_vehicle_validator = vehicle_id
+    
+    if vehicle_id == -1:
+        validator.fk_vehicle_validator = None
+    else:
+        vehicle = session.query(Vehicle).get(vehicle_id)
+        if not vehicle:
+            return False
+        validator.fk_vehicle_validator = vehicle_id
     session.commit()
     return True
 
@@ -41,6 +53,6 @@ def delete_ticket_validator(validator_id: int) -> bool:
     if not validator:
         return False
 
-    TicketValidator.delete(validator)
+    session.delete(validator)
     session.commit()
     return True
