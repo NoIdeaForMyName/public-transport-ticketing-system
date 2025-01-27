@@ -5,7 +5,7 @@ from database_communication.common_functions import *
 #functionalities related to vehicles:
 
 # fetch all vehicles data
-def fetch_all_vehicles():
+def fetch_all_vehicles() -> tuple[dict, bool]:
     with db_session() as session:
         active_courses = select(Course).where(Course.course_end_datetime == null()).subquery()
         to_return = (
@@ -19,20 +19,8 @@ def fetch_all_vehicles():
         )
         return {"vehicle_data": list(map(lambda v_d: vehicle_data_to_dict(*v_d), to_return))}, True
 
-def vehicle_data_to_dict(vehicle: Vehicle, course_id: int | None):
-    return {
-        "id": vehicle.id,
-        "plate_number": vehicle.vehicle_plate_number,
-        "course_id": course_id
-    }
-'''
-select vehicle.id, vehicle.plate_nb, first(course.id) from
-vehicles left join (select course.id from courses where course.end_datetime = NULL) on vehicle.id = course.id
-group by vehicle.id, vehicle.plate_nb
-'''
-
 # add vehicle
-def add_vehicle(plate_nb: str):
+def add_vehicle(plate_nb: str) -> tuple[dict, bool]:
     vehicle_db = Vehicle(
         vehicle_plate_number = plate_nb
     )
@@ -45,7 +33,7 @@ def add_vehicle(plate_nb: str):
             return {"error": f"Vehicle with plate number: {plate_nb} already exists or given plate number is invalid"}, False
 
 # delete vehicle
-def delete_vehicle(plate_nb: str):
+def delete_vehicle(plate_nb: str) -> tuple[dict, bool]:
     with db_session() as session:
         stmt = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb)
         if not stmt.first():
@@ -58,7 +46,7 @@ def delete_vehicle(plate_nb: str):
     return {"message": f"Vehicle with plate number: {plate_nb} deleted succesfully"}, True
 
 # end course
-def end_course(plate_nb: str, end_datetime: datetime):
+def end_course(plate_nb: str, end_datetime: datetime) -> tuple[dict, bool]:
     with db_session() as session:
         course_to_end = session.query(Course)\
             .where(Course.course_end_datetime == null())\
@@ -71,7 +59,7 @@ def end_course(plate_nb: str, end_datetime: datetime):
     return {"message": f"Course of vehicle: {plate_nb} succesfully ended"}, True
 
 # start new course
-def start_course(plate_nb: str, start_datetime: datetime):
+def start_course(plate_nb: str, start_datetime: datetime) -> tuple[dict, bool]:
     with db_session() as session:
         vehicle = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb).first()
         if not vehicle:
@@ -102,7 +90,7 @@ def start_course(plate_nb: str, start_datetime: datetime):
 # functionalities related to ticket validators:
 
 # get all ticket validators
-def get_all_ticket_validators():
+def get_all_ticket_validators() -> tuple[dict, bool]:
     with db_session() as session:
         to_return = (
             session.query(TicketValidator)
@@ -111,16 +99,8 @@ def get_all_ticket_validators():
         )
         return {"ticket_validators": list(map(ticket_validator_data_to_dict, to_return))}, True
 
-def ticket_validator_data_to_dict(validator: TicketValidator):
-    return {
-        "id": validator.id,
-        "ipv4": validator.validator_ip_address,
-        "vehicle_id": validator.vehicle.id,
-        "vehicle_plate_nb": validator.vehicle.vehicle_plate_number
-    }
-
 # add ticket validator
-def add_ticket_validator(ipv4: str, vehicle_plate_nb: str | None):
+def add_ticket_validator(ipv4: str, vehicle_plate_nb: str | None) -> tuple[dict, bool]:
     with db_session() as session:
         vehicle_id = None
         if vehicle_plate_nb:
@@ -140,7 +120,7 @@ def add_ticket_validator(ipv4: str, vehicle_plate_nb: str | None):
             return {"error": f"Ticket validator with ip address: {ipv4} already exists or given ip address is invalid"}, False 
 
 # delete ticket validator
-def delete_ticket_validator(ipv4: str):
+def delete_ticket_validator(ipv4: str) -> tuple[dict, bool]:
     with db_session() as session:
         stmt = session.query(TicketValidator).filter_by(validator_ip_address=ipv4)
         if not stmt.first():
@@ -150,7 +130,7 @@ def delete_ticket_validator(ipv4: str):
         return {"message": f"Ticket validator with ip address: {ipv4} succesfully deleted"}, True
 
 # change validator's vehicle
-def change_validators_vehicle(ipv4, new_vehicle_plate_nb: str | None):
+def change_validators_vehicle(ipv4, new_vehicle_plate_nb: str | None) -> tuple[dict, bool]:
     with db_session() as session:
         new_vehicle = session.query(Vehicle).filter_by(vehicle_plate_number=new_vehicle_plate_nb).first()
         if not new_vehicle:
@@ -173,7 +153,7 @@ def change_validators_vehicle(ipv4, new_vehicle_plate_nb: str | None):
 # fetch_price_list() - imported from common_functions
 
 # add time ticket to offer
-def add_time_ticket_to_offer(validity_period: int, price: float):
+def add_time_ticket_to_offer(validity_period: int, price: float) -> tuple[dict, bool]:
     time_ticket_price_db = TimeTicketPrice(
         time_ticket_validity_period = validity_period,
         time_ticket_amount = price
@@ -187,7 +167,7 @@ def add_time_ticket_to_offer(validity_period: int, price: float):
             return {"error": f"Time ticket type with validity period: {validity_period} already exists or given validity period is invalid"}, False
 
 # edit time ticket in offer
-def edit_time_ticket_in_offer(ticket_id: int, new_price: float):
+def edit_time_ticket_in_offer(ticket_id: int, new_price: float) -> tuple[dict, bool]:
     with db_session() as session:
         time_ticket_to_edit = session.query(TimeTicketPrice).filter_by(id=ticket_id).first()
         if not time_ticket_to_edit:
@@ -197,7 +177,7 @@ def edit_time_ticket_in_offer(ticket_id: int, new_price: float):
         return {"message": f"Time ticket type with id: {ticket_id} succesfully updated, new price: {new_price}"}, True
 
 # delete time ticket from offer
-def delete_time_ticket_from_offer(ticket_id: int):
+def delete_time_ticket_from_offer(ticket_id: int) -> tuple[dict, bool]:
     with db_session() as session:
         stmt = session.query(TimeTicketPrice).filter_by(id=ticket_id)
         if not stmt.first():
@@ -207,7 +187,7 @@ def delete_time_ticket_from_offer(ticket_id: int):
         return {"message": f"Time ticket type with id: {ticket_id} succesfully deleted"}, True
 
 # edit single-use ticket in offer
-def edit_course_ticket_in_offer(ticket_id: int, new_price: float):
+def edit_course_ticket_in_offer(ticket_id: int, new_price: float) -> tuple[dict, bool]:
     with db_session() as session:
         course_ticket_to_edit = session.query(CourseTicketPrice).filter_by(id=ticket_id).first()
         if not course_ticket_to_edit:
@@ -223,20 +203,13 @@ def edit_course_ticket_in_offer(ticket_id: int, new_price: float):
 # functionalities related to RFID cards:
 
 # get all RFID cards
-def get_all_RFID_cards():
+def get_all_RFID_cards() -> tuple[dict, bool]:
     with db_session() as session:
         to_return = session.query(Card).all()
         return {"cards": list(map(card_to_dict, to_return))}, True
 
-def card_to_dict(card: Card):
-    return {
-        "id": card.id,
-        "RFID": card.card_RFID,
-        "balance": card.card_balance
-    }
-
 # add new RFID card
-def add_RFID_card(RFID: str):
+def add_RFID_card(RFID: str) -> tuple[dict, bool]:
     card_db = Card(
             card_RFID = RFID
         )
@@ -249,7 +222,7 @@ def add_RFID_card(RFID: str):
             return {"error": f"Card with RFID: {RFID} already exists or given RFID is invalid"}, False
 
 # delete RFID card
-def delete_RFID_card(RFID: str):
+def delete_RFID_card(RFID: str) -> tuple[dict, bool]:
     with db_session() as session:
         stmt = session.query(Card).filter_by(card_RFID=RFID)
         if not stmt.first():

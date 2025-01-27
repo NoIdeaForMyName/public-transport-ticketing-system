@@ -5,7 +5,7 @@ from database_communication.common_functions import *
 # fetch_price_list() - imported from common_functions
 
 # recharge card
-def recharge_card(RFID: str, amount: float):
+def recharge_card(RFID: str, amount: float) -> tuple[dict, bool]:
     with db_session() as session:
         card_to_charge = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card_to_charge:
@@ -15,7 +15,7 @@ def recharge_card(RFID: str, amount: float):
     return {"message": "Card recharged succesfully"}, True
 
 # buy time ticket
-def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int):
+def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int) -> tuple[dict, bool]:
     with db_session() as session:
         card = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card:
@@ -40,7 +40,7 @@ def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int)
     return {"message": "Time ticket bought succesfully"}, True
 
 # buy single-use ticket
-def buy_course_ticket(RFID: str, validator_ipv4: str):
+def buy_course_ticket(RFID: str, validator_ipv4: str) -> tuple[dict, bool]:
     with db_session() as session:
         card = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card:
@@ -69,7 +69,7 @@ def buy_course_ticket(RFID: str, validator_ipv4: str):
     return {"message": "Course ticket bought succesfully"}, True
 
 # check active tickets
-def check_active_tickets(RFID: str):
+def check_active_tickets(RFID: str) -> tuple[dict, bool]:
     time_ticket_msg, t_ticket_found = check_active_time_tickets(RFID)
     if not t_ticket_found:
         return time_ticket_msg, t_ticket_found
@@ -82,9 +82,9 @@ def check_active_tickets(RFID: str):
         }, True
 
 # check balance
-def check_balance(RFID: str):
+def check_balance(RFID: str) -> tuple[dict, bool]:
     with db_session() as session:
         card = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card:
             return {"error": f"Card with RFID:[{RFID}] not found"}, False
-        return {"balance": card.card_balance}
+        return {"balance": card.card_balance}, True
