@@ -1,6 +1,5 @@
 from database_communication.admin_functionalities import *
 from database_communication.client_functionalities import *
-from database_communication.models import AlchemyEncoder
 
 #session = None
 

@@ -24,6 +24,8 @@ def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int)
         time_ticket_type = session.query(TimeTicketPrice).filter_by(id=ticket_type_id).first()
         if not time_ticket_type:
             return {"error": f"Time ticket type with id: {ticket_type_id} not found"}, False
+        if card.card_balance < time_ticket_type.time_ticket_amount:
+            return {"error": f"Insufficient funds on a card: {RFID} to purchase a ticket"}, False
         validity_period = time_ticket_type.time_ticket_validity_period
         price = time_ticket_type.time_ticket_amount
         end_datetime = purchase_datetime + timedelta(minutes=validity_period)
@@ -33,6 +35,7 @@ def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int)
             fk_card_time_ticket = card_id
         )
         session.add(ticket_db)
+        card.card_balance -= time_ticket_type.time_ticket_amount
         session.commit()
     return {"message": "Time ticket bought succesfully"}, True
 
@@ -49,13 +52,20 @@ def buy_course_ticket(RFID: str, validator_ipv4: str):
         course = msg['active_course']
         if not course:
             return {"error": f"Ticket validator is not active"}, False # no active courses found for given validator's ip address
+        course_ticket_price = session.query(CourseTicketPrice).first().course_ticket_amount
+        if card.card_balance < course_ticket_price:
+            return {"error": f"Insufficient funds on a card: {RFID} to purchase a ticket"}, False
         course_id = course.id
         course_ticket_db = CourseTicket(
             fk_course_ticket = course_id,
             fk_card_course_ticket = card_id
         )
-        session.add(course_ticket_db)
-        session.commit()
+        try:
+            session.add(course_ticket_db)
+            card.card_balance -= course_ticket_price
+            session.commit()
+        except IntegrityError:
+            return {"error": "Course ticket is already bought"}, False
     return {"message": "Course ticket bought succesfully"}, True
 
 # check active tickets
@@ -66,4 +76,15 @@ def check_active_tickets(RFID: str):
     course_ticket_msg, c_ticket_found = check_active_course_tickets(RFID)
     if not c_ticket_found:
         return course_ticket_msg, c_ticket_found
-    return {"active_tickets": list(map(time_ticket_to_dict, time_ticket_msg["active_time_tickets"])) + list(map(course_ticket_to_dict, course_ticket_msg["active_course_tickets"]))}, True
+    return {
+        "active_time_tickets": list(map(time_ticket_to_dict, time_ticket_msg["active_time_tickets"])),
+        "active_course_tickets": list(map(course_ticket_to_dict, course_ticket_msg["active_course_tickets"]))
+        }, True
+
+# check balance
+def check_balance(RFID: str):
+    with db_session() as session:
+        card = session.query(Card).filter_by(card_RFID=RFID).first()
+        if not card:
+            return {"error": f"Card with RFID:[{RFID}] not found"}, False
+        return {"balance": card.card_balance}

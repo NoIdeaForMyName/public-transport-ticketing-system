@@ -50,8 +50,11 @@ def delete_vehicle(plate_nb: str):
         stmt = session.query(Vehicle).filter_by(vehicle_plate_number=plate_nb)
         if not stmt.first():
             return {"error": f"No vehicle with plate number: {plate_nb}"}, False
-        stmt.delete()
-        session.commit()
+        try:
+            stmt.delete()
+            session.commit()
+        except IntegrityError:
+            return {"error": f"Vehicle with plate number: {plate_nb} has delete-restricted relationships"}, False
     return {"message": f"Vehicle with plate number: {plate_nb} deleted succesfully"}, True
 
 # end course
@@ -74,6 +77,16 @@ def start_course(plate_nb: str, start_datetime: datetime):
         if not vehicle:
             return {"error": f"No vehicle with plate number: {plate_nb} found"}, False
         vehicle_id = vehicle.id
+        # check if vehicle has active courses
+        active_courses = (
+            session.query(Course)
+                .join(Vehicle, Course.fk_vehicle_course == Vehicle.id)
+                .where(Vehicle.vehicle_plate_number == plate_nb)
+                .where(Course.course_end_datetime == null())
+                .all()
+        )
+        if active_courses != []:
+            return {"error": f"Vehicle with plate number: {plate_nb} already has active courses"}, False
         course_db = Course(
                 fk_vehicle_course = vehicle_id,
                 course_start_datetime = start_datetime
@@ -241,6 +254,9 @@ def delete_RFID_card(RFID: str):
         stmt = session.query(Card).filter_by(card_RFID=RFID)
         if not stmt.first():
             return {"error": f"No card with RFID: {RFID}"}, False
-        stmt.delete()
-        session.commit()
+        try:
+            stmt.delete()
+            session.commit()
+        except IntegrityError:
+            return {"error": f"Card with RFID: {RFID} has delete-restricted relationships"}, False
         return {"message": f"Card with RFID: {RFID} deleted succesfully"}, True

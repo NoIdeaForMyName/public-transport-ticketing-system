@@ -55,7 +55,7 @@ def fetch_price_list():
     return {
         'course_ticket_price': get_course_ticket_price(),
         'time_ticket_prices': get_time_ticket_prices()
-    }
+    }, True
 
 # OLD:
 
@@ -125,7 +125,9 @@ def time_ticket_to_dict(ticket: TimeTicket):
     }
 
 def course_ticket_to_dict(ticket: CourseTicket):
-    vehicle: Vehicle = ticket.course.vehicle
+    with db_session() as session:
+        ticket = session.merge(ticket)
+        vehicle: Vehicle = ticket.course.vehicle
     return {
         "vehicle_id": vehicle.id,
         "vehicle_plate_nb": vehicle.vehicle_plate_number

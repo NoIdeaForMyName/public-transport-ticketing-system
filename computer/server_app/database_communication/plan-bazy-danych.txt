@@ -4,6 +4,7 @@ trzeba dodac adminowi funkcje edycji cennika biletow
 
 FUNKCJONALNOSCI KLIENTA:
 wazne: kasownik nie zna swojego ID (zna tylko IPv4)
+wazne: klient moze kupic TYLKO JEDEN bilet jednorazowy ale moze kupic KILKA biletow czasowych (bo np. kupuje bilet czasowy a na ostatnim zostaly 2 minuty)
 
 pobierz_cennik(); -> json - cena biletu jednorazowego: {id ceny, cena}, cena biletu czasowego: [{id ceny, cena za 15 min}, {id ceny, cena za 30 min}, {...}] # wywolywane przed kazda proba zakupu biletu w kasowniku
 doladuj_karte(RFID, kwota); -> udalo sie lub nie
