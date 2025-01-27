@@ -21,3 +21,4 @@ __pycache__
 # Other
 test_db.py
 test.db
+public_transport_ticketing_system.db
