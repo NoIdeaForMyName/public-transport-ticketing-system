@@ -7,8 +7,8 @@ import paho.mqtt.client as mqtt
 specify_db_path("./../database/public_transport_ticketing_system.db")
 
 # broker configuration
-BROKER_ADDRESS = ""
-BROKER_PORT = 8883
+BROKER_ADDRESS = "localhost"
+BROKER_PORT = 1883
 USERNAME = ""
 PASSWORD = ""
 
@@ -28,6 +28,7 @@ METHODS = {
     "check_balance": check_balance,
     "fetch_price_list": fetch_price_list
 }
+
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -58,8 +59,8 @@ def on_message(client, userdata, msg):
 
 #mqtt client configuration
 client = mqtt.Client()
-client.username_pw_set(USERNAME, PASSWORD)
-client.tls_set(CA_CERT, CLIENT_CERT, CLIENT_KEY)
+# client.username_pw_set(USERNAME, PASSWORD)
+# client.tls_set(CA_CERT, CLIENT_CERT, CLIENT_KEY)
 client.on_connect = on_connect
 client.on_message = on_message
 
