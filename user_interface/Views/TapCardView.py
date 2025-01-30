@@ -1,25 +1,20 @@
 # tap_card_view.py
 from datetime import datetime
 
-from .BaseView import BaseView
-from .Actions import Action
-from .TransactionStatusView import TransactionStatusView
-from user_interface.image_playground import (
-    generate_static_icon_interface,
-    generate_dynamic_icon_interface,
-    prepare_draw_object
-)
-
-from user_interface.utilities.constants import (
-    TAP_CARD_TITLE, CARD_ICON_PATH, CARDS_ICON_SIZE,
-    CHARGE_CARD_SUCCESS_TITLE, TICK_MARK_PATH,
-    X_MARK_PATH, BOUGHT_SUCCESSFULLY_TITLE, NOT_BOUGHT_TITLE,
-    YOUR_TICKET_TITLE, HAPPY_FACE_PATH, ANGRY_FACE_PATH, MARKS_SIZE, CARD_REJECTED_TITLE, BACKGROUND_IMAGE_PATH
-)
-
 from user_interface.functions_mockups import (
     buy_course_ticket, recharge_card, buy_time_ticket, check_active_tickets
 )
+from user_interface.image_playground import (
+    generate_static_icon_interface,
+    prepare_draw_object
+)
+from user_interface.utilities.constants import (
+    TAP_CARD_TITLE, CARD_ICON_PATH, CARDS_ICON_SIZE,
+    BACKGROUND_IMAGE_PATH
+)
+from .Actions import Action
+from .BaseView import BaseView
+from .TransactionStatusView import TransactionStatusView
 
 
 class TapCardView(BaseView):
@@ -40,7 +35,7 @@ class TapCardView(BaseView):
 
         if action == Action.CARD_TAPPED:
             rfid = self.manager.last_card_id or "UNKNOWN"
-            ip = "192.168.0.100" ## HOW TO GET THIS??????????
+            ip = "192.168.0.100"  ## HOW TO GET THIS??????????
 
             success = False
             extra_text = ""
@@ -70,7 +65,7 @@ class TapCardView(BaseView):
             elif self.mode == 'check_ticket':
                 message = "Sprawdzenie biletu"
                 data_dict, success = check_active_tickets(rfid)
-                if success: ## will be changed
+                if success:  ## will be changed
                     if data_dict.get("active_time_tickets"):
                         extra_text = "Aktywny bilet czasowy pozostalo: " + data_dict["active_time_tickets"][0]
                     elif data_dict.get("active_course_tickets"):
