@@ -3,8 +3,12 @@ from ViewManager import ViewManager
 
 
 def main():
-    main_view = MainMenuView()
-    manager = ViewManager(initial_view=main_view)
+    start_view = MainMenuView(None)
+
+    manager = ViewManager(initial_view=start_view, device_mode="mock")
+
+    start_view.manager = manager
+
     manager.start()
 
 

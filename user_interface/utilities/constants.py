@@ -31,3 +31,5 @@ BOUGHT_SUCCESSFULLY_TITLE = 'Zakup wykonany pomyslnie'
 NOT_BOUGHT_TITLE = 'Platnosc odrzucona'
 YOUR_TICKET_TITLE = 'Twoj bilet'
 CARD_REJECTED_TITLE = 'Karta odrzucona'
+BACKGROUND_IMAGE_PATH = 'utilities/background.png'
+NOT_ACTIVE_TEXT = "Nieaktywny"

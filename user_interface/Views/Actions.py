@@ -6,4 +6,3 @@ class Action(Enum):
     RED_PRESS = 2
     RED_LONG_PRESS = 3
     CARD_TAPPED = 4
-    EXIT = 5
