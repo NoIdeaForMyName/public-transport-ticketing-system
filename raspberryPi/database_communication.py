@@ -56,7 +56,7 @@ def wait_for_connection(timeout=5):
     start_time = time.time()
     while not connected:
         if time.time() - start_time > timeout:
-            raise Exception("⏳ Timeout: Nie udało się połączyć z brokerem MQTT")
+            raise Exception("Timeout")
         time.sleep(0.1)
 
 # wysyłanie zapytań do serwera

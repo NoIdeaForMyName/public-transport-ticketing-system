@@ -3,6 +3,10 @@ from database_communication import *
 import json
 import paho.mqtt.client as mqtt
 
+#do testów
+# def check_balance(RFID: str):
+#     return {"balance": 4.5}, True
+
 
 specify_db_path("./../database/public_transport_ticketing_system.db")
 
