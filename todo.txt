@@ -1,0 +1,1 @@
+sprawdzac czy aktywny bilet jednorazowy jest sprawdzany w kasowniku nalezacym do pojazdu w ktorym byl kupowany

@@ -1,5 +1,5 @@
 # tap_card_view.py
-from datetime import datetime
+from datetime import *
 
 from user_interface.functions_mockups import (
     buy_course_ticket, recharge_card, buy_time_ticket, check_active_tickets
@@ -16,6 +16,9 @@ from .Actions import Action
 from .BaseView import BaseView
 from .TransactionStatusView import TransactionStatusView
 
+import socket
+
+# import database_communication
 
 class TapCardView(BaseView):
     def __init__(self, manager, mode):
@@ -35,8 +38,9 @@ class TapCardView(BaseView):
 
         if action == Action.CARD_TAPPED:
             rfid = self.manager.last_card_id or "UNKNOWN"
-            ip = "192.168.0.100"  ## HOW TO GET THIS??????????
+            # ip = "192.168.0.100"  ## HOW TO GET THIS??????????
 
+            ip = socket.gethostbyname(socket.gethostname())
             success = False
             extra_text = ""
             message = ""
@@ -55,19 +59,27 @@ class TapCardView(BaseView):
                 _, success = recharge_card(rfid, 50.0)
             elif self.mode == '15min':
                 message = "Bilet 15min"
-                _, success = buy_time_ticket(rfid, datetime.now(), 1)
+                price_dict = fetch_price_list()
+                id_ticket = price_dict['time_ticket_prices']['id']
+                _, success = buy_time_ticket(rfid, datetime.now(), id_ticket)
             elif self.mode == '30min':
                 message = "Bilet 30min"
-                _, success = buy_time_ticket(rfid, datetime.now(), 2)
+                price_dict = fetch_price_list()
+                id_ticket = price_dict['time_ticket_prices']['id']
+                _, success = buy_time_ticket(rfid, datetime.now(), id_ticket)
             elif self.mode == '1h':
                 message = "Bilet 1h"
-                _, success = buy_time_ticket(rfid, datetime.now(), 3)
+                price_dict = fetch_price_list()
+                id_ticket = price_dict['time_ticket_prices']['id']
+                _, success = buy_time_ticket(rfid, datetime.now(), id_ticket)
             elif self.mode == 'check_ticket':
                 message = "Sprawdzenie biletu"
                 data_dict, success = check_active_tickets(rfid)
                 if success:  ## will be changed
                     if data_dict.get("active_time_tickets"):
-                        extra_text = "Aktywny bilet czasowy pozostalo: " + data_dict["active_time_tickets"][0]
+                        time_left = (datetime.now() - data_dict["active_time_tickets"]['validity_period']).total_seconds()
+                        minutes, seconds = divmod(time_left, 60)
+                        extra_text = f"Aktywny bilet czasowy pozostalo: {minutes} minut {seconds} sekund"
                     elif data_dict.get("active_course_tickets"):
                         extra_text = "Aktywny bilet jednorazowy "
 
