@@ -17,11 +17,10 @@ CLIENT_CERT = ""
 REQUEST_TOPIC = "server/request"
 RESPONSE_TOPIC = "client/response"
 
-# Przechowywanie oczekujących odpowiedzi
+# metody oczekujące na odpowiedź
 pending_requests = {}
 connected = False
 
-# Obsługa połączenia
 def on_connect(client, userdata, flags, rc):
     global connected
     if rc == 0:
@@ -31,7 +30,7 @@ def on_connect(client, userdata, flags, rc):
     else:
         print(f"Błąd połączenia, kod: {rc}")
 
-# Obsługa wiadomości od serwera
+#obsługa wiadomości
 def on_message(client, userdata, msg):
     payload = json.loads(msg.payload.decode())
     request_id = payload.get("id")
@@ -42,7 +41,7 @@ def on_message(client, userdata, msg):
         future_response = pending_requests.pop(request_id)
         future_response.append((response, success))
 
-# Inicjalizacja klienta MQTT
+# konfiguracja klienta
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
@@ -60,7 +59,7 @@ def wait_for_connection(timeout=5):
             raise Exception("⏳ Timeout: Nie udało się połączyć z brokerem MQTT")
         time.sleep(0.1)
 
-# Metoda wysyłania zapytań do serwera
+# wysyłanie zapytań do serwera
 def send_request(method, params):
     wait_for_connection()
     request_id = str(uuid.uuid4())
