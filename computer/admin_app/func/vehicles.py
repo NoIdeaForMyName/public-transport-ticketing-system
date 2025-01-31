@@ -1,6 +1,6 @@
 import datetime
 from typing import Optional
-from .model import Course, CourseTicket, Vehicle, session
+from .model import Course, CourseTickets, TicketValidator, Vehicle, session
 
 class VehicleData:
     id: int
@@ -64,19 +64,27 @@ def add_vehicle(registration_number: str) -> bool:
     return True
 
 def delete_vehicle(vehicle_id: int) -> bool:
+    vehicle_courses = session.query(Course).filter(Course.fk_vehicle_course == vehicle_id)
+    for course in vehicle_courses:
+        session.query(CourseTickets).filter(
+            CourseTickets.fk_course_ticket == course.id
+        ).delete(synchronize_session=False)
+    
+    # Then delete all courses
+    session.query(Course).filter(
+        Course.fk_vehicle_course == vehicle_id
+    ).delete(synchronize_session=False)
+    
+    # Set validators to NULL (we don't delete them)
+    session.query(TicketValidator).filter(
+        TicketValidator.fk_vehicle_validator == vehicle_id
+    ).update({TicketValidator.fk_vehicle_validator: None}, synchronize_session=False)
+    
+    # Finally delete the vehicle
     vehicle = session.query(Vehicle).get(vehicle_id)
     if not vehicle:
         return False
-
-    for course in vehicle.courses:
-        for ticket in course.course_tickets:
-            session.delete(ticket)
         
-        session.delete(course)
-    
-    for validator in vehicle.ticket_validators:
-        validator.fk_vehicle_validator = None
-
     session.delete(vehicle)
     session.commit()
     return True

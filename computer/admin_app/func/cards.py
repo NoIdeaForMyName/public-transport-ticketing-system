@@ -1,4 +1,4 @@
-from .model import Card, session
+from .model import Card, CourseTickets, TimeTicket, session
 
 class CardData:
     id: int
@@ -39,9 +39,21 @@ def delete_card(card_id: int) -> bool:
     if not card:
         return False
 
-    for time_ticket in card.time_tickets:
-        session.delete(time_ticket)
-
+    session.query(CourseTickets).filter(
+        CourseTickets.fk_card_course_ticket == card_id
+    ).delete(synchronize_session=False)
+    
+    # Then delete TimeTickets
+    session.query(TimeTicket).filter(
+        TimeTicket.fk_card_time_ticket == card_id
+    ).delete(synchronize_session=False)
+    
+    # Finally delete the card
+    card = session.query(Card).get(card_id)
+    if not card:
+        return False
+        
     session.delete(card)
+    session.flush()
     session.commit()
     return True

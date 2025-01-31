@@ -6,6 +6,7 @@ from config import DB_ADRESS
 
 # Create engine
 engine = create_engine(DB_ADRESS)
+print(engine.url.database)
 
 # Create session factory and bind it to Base
 session = scoped_session(sessionmaker(bind=engine))
@@ -20,7 +21,7 @@ class Card(Base):
         "TimeTicket", back_populates="card"
     )
     course_tickets = relationship(
-        "CourseTicket", back_populates="card"
+        "CourseTickets", back_populates="card"
     )
 
 class Vehicle(Base):
@@ -71,14 +72,14 @@ class Course(Base):
     course_start_datetime = Column(DateTime, nullable=False)
     course_end_datetime = Column(DateTime, nullable=True)
     course_tickets = relationship(
-        "CourseTicket", back_populates="course"
+        "CourseTickets", back_populates="course"
     )
     vehicle = relationship(
         "Vehicle", back_populates="courses"
     )
 
-class CourseTicket(Base):
-    __tablename__ = "CourseTicket"
+class CourseTickets(Base):
+    __tablename__ = "CourseTickets"
     fk_course_ticket = Column(Integer, ForeignKey("Courses.id"), primary_key=True)
     fk_card_course_ticket = Column(Integer, ForeignKey("Cards.id"), primary_key=True)
     course = relationship(
