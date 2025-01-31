@@ -88,3 +88,11 @@ def check_balance(RFID: str) -> tuple[dict, bool]:
         if not card:
             return {"error": f"Card with RFID:[{RFID}] not found"}, False
         return {"balance": card.card_balance}, True
+
+def check_ticket_validator_vehicle(ipv4: str) -> tuple[dict, bool]:
+    with db_session() as session:
+        validator = session.query(TicketValidator).filter_by(validator_ip_address=ipv4).first()
+        if not validator or not validator.vehicle:
+            return {"error": f"Ticket validator with ip address: {ipv4} not found or no vehicle associated with it"}, False
+        return {"vehicle": vehicle_to_dict(validator.vehicle)}, True
+        

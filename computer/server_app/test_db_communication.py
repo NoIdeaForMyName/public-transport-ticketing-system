@@ -76,6 +76,7 @@ print(buy_course_ticket("123456789012", "192.168.0.2"))
 print(recharge_card("123456789012", 25))
 print(buy_time_ticket("123456789012", datetime.now(), 1))
 print(buy_course_ticket("123456789012", "192.168.0.2"))
+print(check_ticket_validator_vehicle("192.168.0.2"))
 
 active_tickets, success = check_active_tickets("123456789012")
 if success:

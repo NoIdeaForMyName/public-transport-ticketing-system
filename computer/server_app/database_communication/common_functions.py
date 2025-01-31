@@ -126,6 +126,12 @@ def course_ticket_type_to_dict(type: CourseTicketPrice) -> dict:
         "amount": type.course_ticket_amount
     }
 
+def vehicle_to_dict(vehicle: Vehicle) -> dict:
+    return {
+        "id": vehicle.id,
+        "plate_number": vehicle.vehicle_plate_number
+    }
+
 def vehicle_data_to_dict(vehicle: Vehicle, course_id: int | None) -> dict:
     return {
         "id": vehicle.id,
