@@ -1,0 +1,6 @@
+ustawienie skryptów na wykonywalne
+konfiguracja brokera + sprawdzenie czy ściezka do haseł się dodała
+konfiguracja brokera tls + ustawienie portu
+przerzucenie certyfikatów na klienta
+zmiana uprawnień do certyfikatów na brokerze
+ustawienie wymagania certyfikatów klienta
