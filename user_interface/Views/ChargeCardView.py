@@ -1,7 +1,7 @@
 from .BaseView import BaseView
 from .Actions import Action
-from user_interface.image_playground import generate_radio_button_interface, prepare_draw_object
-from user_interface.utilities.constants import CHARGE_CARD_OPTIONS, CHARGE_CARD_TITLE, BACKGROUND_IMAGE_PATH
+from image_playground import generate_radio_button_interface, prepare_draw_object
+from utilities.constants import CHARGE_CARD_OPTIONS, CHARGE_CARD_TITLE, BACKGROUND_IMAGE_PATH
 
 from .TapCardView import TapCardView
 
@@ -20,6 +20,7 @@ class ChargeCardView(BaseView):
         return result
 
     def handle_input(self, action):
+        reload = False
         if action == Action.GREEN_PRESS:
             if self.selected_option == 1:
                 return TapCardView, {"mode": "5zl"}
@@ -33,9 +34,10 @@ class ChargeCardView(BaseView):
                 self.selected_option += 1
             else:
                 self.selected_option = 1
+            reload = True
 
         elif action == Action.RED_LONG_PRESS:
             from .MainMenuView import MainMenuView
             return MainMenuView, None
 
-        return self.__class__, None
+        return self.__class__, reload

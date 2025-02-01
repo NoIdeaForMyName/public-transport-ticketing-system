@@ -1,7 +1,7 @@
 import time
 from Views.Actions import Action
 from Views.TapCardView import TapCardView as TapCardView
-from user_interface.Views.MainMenuView import MainMenuView
+from Views.MainMenuView import MainMenuView
 from rasberryPI.oled_functionalities import oled_manager, init_oled
 
 try:
@@ -47,14 +47,13 @@ class ViewManager:
         print("[ViewManager] Real hardware setup complete.")
 
     def start(self):
+        image = self.current_view.render()    
+        if self.oled_manager_fun:
+            self.oled_manager_fun(self.display, image)
+        else:
+            image.show()
         while True:
-            image = self.current_view.render()
-
-            if self.oled_manager_fun:
-                self.oled_manager_fun(self.display, image)
-            else:
-                image.show()
-
+        
             if self.device_mode == "real":
                 action = self._poll_real_hardware()
             else:
@@ -62,9 +61,23 @@ class ViewManager:
 
             if action is not None:
                 next_view_class, param = self.current_view.handle_input(action)
+                print(param) 
                 if next_view_class != self.current_view.__class__:
                     self._switch_view(next_view_class, param)
+                    image = self.current_view.render()    
+                    if self.oled_manager_fun:
+                        self.oled_manager_fun(self.display, image)
+                    else:
+                        image.show()
+                       
+                elif param:
+                    image = self.current_view.render()    
+                    if self.oled_manager_fun:
+                        self.oled_manager_fun(self.display, image)
+                    else:
+                        image.show()
 
+            
             time.sleep(0.01)
 
     def _switch_view(self, next_view_class, param):
@@ -74,6 +87,12 @@ class ViewManager:
             self.current_view = next_view_class(self, param)
         else:
             self.current_view = next_view_class(self)
+
+        # image = self.current_view.render()    
+        # if self.oled_manager_fun:
+        #     self.oled_manager_fun(self.display, image)
+        # else:
+        #     image.show()
 
     # ----------------- MOCK -------------------
     def _poll_mock_input(self):
@@ -110,7 +129,7 @@ class ViewManager:
         elif not red_state and self.red_is_pressed:
             press_duration = now - self.red_press_start
             self.red_is_pressed = False
-            if press_duration > 1.0:
+            if press_duration > 2.0:
                 action = Action.RED_LONG_PRESS
             else:
                 action = Action.RED_PRESS
@@ -121,6 +140,7 @@ class ViewManager:
             action = Action.GREEN_PRESS
         elif not green_state and self.green_is_pressed:
             self.green_is_pressed = False
+
 
         return action
 

@@ -1,7 +1,7 @@
 from .BaseView import BaseView
 from .Actions import Action
-from user_interface.image_playground import generate_radio_button_interface, prepare_draw_object
-from user_interface.utilities.constants import MAIN_MENU_OPTIONS, MAIN_MENU_TITLE, BACKGROUND_IMAGE_PATH
+from image_playground import generate_radio_button_interface, prepare_draw_object
+from utilities.constants import MAIN_MENU_OPTIONS, MAIN_MENU_TITLE, BACKGROUND_IMAGE_PATH
 from .TicketChoiceView import TicketChoiceView
 from .ChargeCardView import ChargeCardView
 from .TapCardView import TapCardView
@@ -21,6 +21,7 @@ class MainMenuView(BaseView):
         return result
 
     def handle_input(self, action):
+        reload = False
         if action == Action.GREEN_PRESS:
             if self.selected_option == 1:
                 return TicketChoiceView, None
@@ -34,5 +35,7 @@ class MainMenuView(BaseView):
                 self.selected_option += 1
             else:
                 self.selected_option = 1
+            reload = True
+        print(action)
 
-        return self.__class__, None
+        return self.__class__, reload

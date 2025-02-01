@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
-    echo "Użycie: $0 <nazwa_użytkownika> <hasło>"
-    exit 1
-fi
-
 USER=$1
 PASSWORD=$2
 PASSWORD_FILE="/etc/mosquitto/passwords.txt"
@@ -17,4 +12,5 @@ else
     systemctl start mosquitto
 fi
 
-echo "Użytkownik $USER został dodany i może subskrybować tematy."
+echo "User $USER has been added and can subscribe now"
+
