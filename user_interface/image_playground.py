@@ -44,8 +44,10 @@ def draw_text(draw, text, start_coords, font=ImageFont.load_default()):
     wrapped_lines = []
 
     for word in words:
-        test_line = current_line + " " + word if current_line else word
-        line_width = draw.textbbox((0, 0), test_line, font=font)[2]
+        # Tworzenie testowej linii z dodanym nowym słowem
+        test_line = f"{current_line} {word}" if current_line else word
+        # Pobranie szerokości testowej linii
+        line_width, _ = draw.textsize(test_line, font=font)
 
         if line_width <= MAX_TEXT_WIDTH:
             current_line = test_line
@@ -54,12 +56,16 @@ def draw_text(draw, text, start_coords, font=ImageFont.load_default()):
                 wrapped_lines.append(current_line)
             current_line = word
 
+    # Dodanie ostatniej linii, jeśli istnieje
     if current_line:
         wrapped_lines.append(current_line)
 
+    # Rysowanie każdej z linii tekstu
     for line in wrapped_lines:
         draw.text((x, y), line, font=font, fill="white")
-        y += font.getbbox("A")[3] + TEXT_LINES_SPACING
+        # Pobranie wysokości tekstu dla linii (używamy np. litery "A")
+        _, line_height = font.getsize("A")
+        y += line_height + TEXT_LINES_SPACING
 
 
 def generate_radio_button_interface(draw, result, title, options, selected_option, font=ImageFont.load_default()):
@@ -83,7 +89,8 @@ def generate_static_icon_interface(draw, result, title, icon, icon_size):
 
 def generate_dynamic_icon_interface(draw, result, title, dynamic_text, icon):
     draw_text(draw, title, TITLE_START_COORDS)
-    font = ImageFont.truetype("arial.ttf", 7)
+    # font = ImageFont.truetype("arial.ttf", 7)
+    font = ImageFont.load_default()
     draw_text(draw, dynamic_text, DYNAMIC_TEXT_COORDS, font)
     paste_scaled_icon(result, icon, DYNAMIC_INTERFACE_ICON_COORDS, FACES_SIZE)
     return result

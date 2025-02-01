@@ -1,7 +1,7 @@
 from .BaseView import BaseView
 from .Actions import Action
-from user_interface.image_playground import generate_radio_button_interface, prepare_draw_object
-from user_interface.utilities.constants import VALIDITY_TIME_OPTIONS, VALIDITY_TIME_TITLE, BACKGROUND_IMAGE_PATH
+from image_playground import generate_radio_button_interface, prepare_draw_object
+from utilities.constants import VALIDITY_TIME_OPTIONS, VALIDITY_TIME_TITLE, BACKGROUND_IMAGE_PATH
 from .TapCardView import TapCardView
 
 

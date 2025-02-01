@@ -2,12 +2,12 @@ import time
 
 from .BaseView import BaseView
 from .Actions import Action
-from user_interface.image_playground import (
+from image_playground import (
     prepare_draw_object,
     generate_static_icon_interface,
     generate_dynamic_icon_interface
 )
-from user_interface.utilities.constants import (
+from utilities.constants import (
     HAPPY_FACE_PATH, ANGRY_FACE_PATH,
     TICK_MARK_PATH, X_MARK_PATH,
     CHARGE_CARD_SUCCESS_TITLE, NOT_BOUGHT_TITLE, BACKGROUND_IMAGE_PATH, CARD_REJECTED_TITLE, CHARGE_CARD_SUCCESS_TITLE,

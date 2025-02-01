@@ -46,9 +46,10 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-# client.username_pw_set(USERNAME, PASSWORD)
+
 # client.tls_set(CA_CERT, CLIENT_CERT, CLIENT_KEY)
 
+client.username_pw_set(USERNAME, PASSWORD)
 client.connect(BROKER_ADDRESS, BROKER_PORT)
 client.loop_start()
 
@@ -70,7 +71,6 @@ def send_request(method, params):
     payload = {"id": request_id, "method": method, "params": params}
     client.publish(REQUEST_TOPIC, json.dumps(payload))
 
-    # Oczekiwanie na odpowiedź
     while not future_response:
         time.sleep(0.1)
 

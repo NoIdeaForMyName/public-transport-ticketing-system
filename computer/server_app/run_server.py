@@ -41,6 +41,15 @@ def on_connect(client, userdata, flags, rc):
     else:
         print(f"Error connecting:  {rc}")
 
+METHODS = {
+    "recharge_card": recharge_card,
+    "buy_time_ticket": buy_time_ticket,
+    "buy_course_ticket": buy_course_ticket,
+    "check_active_tickets": check_active_tickets,
+    "check_balance": check_balance,
+    "fetch_price_list": fetch_price_list
+}
+
 # server receives message via mqtt and publishes called methods results
 def on_message(client, userdata, msg):
     try:
@@ -60,6 +69,7 @@ def on_message(client, userdata, msg):
     except Exception as e:
         error_msg = {"id": request_id, "response": {"error": str(e)}, "success": False}
         client.publish(RESPONSE_TOPIC, json.dumps(error_msg))
+
 
 #mqtt client configuration
 client = mqtt.Client()

@@ -5,7 +5,7 @@ from ViewManager import ViewManager
 def main():
     start_view = MainMenuView(None)
 
-    manager = ViewManager(initial_view=start_view, device_mode="mock")
+    manager = ViewManager(initial_view=start_view, device_mode="real")
 
     start_view.manager = manager
 
