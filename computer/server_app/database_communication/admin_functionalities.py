@@ -156,7 +156,7 @@ def change_validators_vehicle(ipv4, new_vehicle_plate_nb: str | None) -> tuple[d
 def add_time_ticket_to_offer(validity_period: int, price: float) -> tuple[dict, bool]:
     time_ticket_price_db = TimeTicketPrice(
         time_ticket_validity_period = validity_period,
-        time_ticket_amount = price
+        time_ticket_amount = decimal.Decimal(price)
     )
     with db_session() as session:
         try:
@@ -172,7 +172,7 @@ def edit_time_ticket_in_offer(ticket_id: int, new_price: float) -> tuple[dict, b
         time_ticket_to_edit = session.query(TimeTicketPrice).filter_by(id=ticket_id).first()
         if not time_ticket_to_edit:
             return {"error": f"No time ticket type with id: {ticket_id}"}, False
-        time_ticket_to_edit.time_ticket_amount = new_price
+        time_ticket_to_edit.time_ticket_amount = decimal.Decimal(new_price)
         session.commit()
         return {"message": f"Time ticket type with id: {ticket_id} succesfully updated, new price: {new_price}"}, True
 
@@ -192,7 +192,7 @@ def edit_course_ticket_in_offer(ticket_id: int, new_price: float) -> tuple[dict,
         course_ticket_to_edit = session.query(CourseTicketPrice).filter_by(id=ticket_id).first()
         if not course_ticket_to_edit:
             return {"error": f"No course ticket type with id: {ticket_id}"}, False
-        course_ticket_to_edit.course_ticket_amount = new_price
+        course_ticket_to_edit.course_ticket_amount = decimal.Decimal(new_price)
         session.commit()
         return {"message": f"Course ticket type with id: {ticket_id} succesfully updated, new price: {new_price}"}, True
 ##############################################################################################################################

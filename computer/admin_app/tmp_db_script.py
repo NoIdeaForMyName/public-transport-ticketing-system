@@ -1,7 +1,7 @@
 import sqlite3
 
 # Connect to database
-conn = sqlite3.connect('public_transport_ticketing_system.db')
+conn = sqlite3.connect('./../database/public_transport_ticketing_system.db')
 cur = conn.cursor()
 
 # Sample data inserts

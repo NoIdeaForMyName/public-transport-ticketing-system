@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from database_communication.models import *
 from contextlib import contextmanager
 from datetime import datetime, timedelta
+import decimal
 
 
 DB_PATH = None
@@ -117,13 +118,13 @@ def time_ticket_type_to_dict(type: TimeTicketPrice) -> dict:
     return {
         "id": type.id,
         "validity_period": type.time_ticket_validity_period,
-        "amount": type.time_ticket_amount
+        "amount": float(type.time_ticket_amount)
     }
 
 def course_ticket_type_to_dict(type: CourseTicketPrice) -> dict:
     return {
         "id": type.id,
-        "amount": type.course_ticket_amount
+        "amount": float(type.course_ticket_amount)
     }
 
 def vehicle_to_dict(vehicle: Vehicle) -> dict:
@@ -151,5 +152,5 @@ def card_to_dict(card: Card) -> dict:
     return {
         "id": card.id,
         "RFID": card.card_RFID,
-        "balance": card.card_balance
+        "balance": float(card.card_balance)
     }

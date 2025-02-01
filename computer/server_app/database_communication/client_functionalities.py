@@ -1,6 +1,5 @@
 from database_communication.common_functions import *
 
-
 # fetch price list
 # fetch_price_list() - imported from common_functions
 
@@ -10,12 +9,13 @@ def recharge_card(RFID: str, amount: float) -> tuple[dict, bool]:
         card_to_charge = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card_to_charge:
             return {"error": f"Card with RFID:[{RFID}] not found"}, False
-        card_to_charge.card_balance += amount
+        card_to_charge.card_balance += decimal.Decimal(amount)
         session.commit()
     return {"message": "Card recharged succesfully"}, True
 
 # buy time ticket
-def buy_time_ticket(RFID: str, purchase_datetime: datetime, ticket_type_id: int) -> tuple[dict, bool]:
+def buy_time_ticket(RFID: str, purchase_datetime: str, ticket_type_id: int) -> tuple[dict, bool]:
+    purchase_datetime = datetime.strptime(purchase_datetime, "%Y-%m-%d %H:%M:%S")
     with db_session() as session:
         card = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card:
