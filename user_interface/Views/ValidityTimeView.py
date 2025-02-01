@@ -19,6 +19,7 @@ class ValidityTimeView(BaseView):
         return result
 
     def handle_input(self, action):
+        reload = False
         if action == Action.GREEN_PRESS:
             if self.selected_option == 1:
                 return TapCardView, {"mode": "15min"}
@@ -28,6 +29,7 @@ class ValidityTimeView(BaseView):
                 return TapCardView, {"mode": "1h"}
 
         elif action == Action.RED_PRESS:
+            reload = True
             if self.selected_option < 3:
                 self.selected_option += 1
             else:
@@ -37,4 +39,4 @@ class ValidityTimeView(BaseView):
             from .TicketChoiceView import TicketChoiceView
             return TicketChoiceView, None
 
-        return self.__class__, None
+        return self.__class__, reload

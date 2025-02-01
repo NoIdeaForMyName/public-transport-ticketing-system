@@ -15,7 +15,7 @@ def recharge_card(RFID: str, amount: float) -> tuple[dict, bool]:
 
 # buy time ticket
 def buy_time_ticket(RFID: str, purchase_datetime: str, ticket_type_id: int) -> tuple[dict, bool]:
-    purchase_datetime = datetime.strptime(purchase_datetime, "%Y-%m-%d %H:%M:%S")
+    purchase_datetime = datetime.strptime(purchase_datetime, DATETIME_FORMAT)
     with db_session() as session:
         card = session.query(Card).filter_by(card_RFID=RFID).first()
         if not card:

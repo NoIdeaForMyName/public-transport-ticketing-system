@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 import decimal
 
-
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DB_PATH = None
 
 
@@ -100,9 +100,9 @@ def check_active_course_tickets(RFID: str) -> tuple[dict, bool]:
 
 def time_ticket_to_dict(ticket: TimeTicket) -> dict:
     return {
-        "id": ticket.id,
-        "validity_period": ticket.ticket_validity_period,
-        "end_datetime": ticket.ticket_end_datetime,
+        "id": int(ticket.id),
+        "validity_period": int(ticket.ticket_validity_period),
+        "end_datetime": ticket.ticket_end_datetime.strftime(DATETIME_FORMAT),
     }
 
 def course_ticket_to_dict(ticket: CourseTicket) -> dict:
@@ -116,21 +116,21 @@ def course_ticket_to_dict(ticket: CourseTicket) -> dict:
 
 def time_ticket_type_to_dict(type: TimeTicketPrice) -> dict:
     return {
-        "id": type.id,
-        "validity_period": type.time_ticket_validity_period,
+        "id": int(type.id),
+        "validity_period": int(type.time_ticket_validity_period),
         "amount": float(type.time_ticket_amount)
     }
 
 def course_ticket_type_to_dict(type: CourseTicketPrice) -> dict:
     return {
-        "id": type.id,
+        "id": int(type.id),
         "amount": float(type.course_ticket_amount)
     }
 
 def vehicle_to_dict(vehicle: Vehicle) -> dict:
     return {
-        "id": vehicle.id,
-        "plate_number": vehicle.vehicle_plate_number
+        "id": int(vehicle.id),
+        "plate_number": str(vehicle.vehicle_plate_number)
     }
 
 def vehicle_data_to_dict(vehicle: Vehicle, course_id: int | None) -> dict:

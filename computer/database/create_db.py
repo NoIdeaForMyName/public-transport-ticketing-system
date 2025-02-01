@@ -12,7 +12,7 @@ def main():
 
     connection = sqlite3.connect(DB_PATH)
 
-    with open('computer/database/PublicTransportTicketingSystem.ddl.sql', 'r') as file:
+    with open('PublicTransportTicketingSystem.ddl.sql', 'r') as file:
         query = file.read()
 
     connection.executescript(query)

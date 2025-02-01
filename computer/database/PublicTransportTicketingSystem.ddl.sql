@@ -63,3 +63,9 @@ CREATE TABLE IF NOT EXISTS "TimeTicketPrices" (
 	"time_ticket_amount" NUMERIC NOT NULL,
 	PRIMARY KEY("id")
 );
+
+INSERT INTO TimeTicketPrices (time_ticket_validity_period, time_ticket_amount)
+VALUES 
+    (15, 1.0),
+    (30, 1.5),
+    (60, 2.0);

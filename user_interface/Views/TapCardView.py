@@ -95,11 +95,16 @@ class TapCardView(BaseView):
                 data_dict, success = database_communication.check_active_tickets(rfid)
                 if success:  ## will be changed
                     if data_dict.get("active_time_tickets"):
-                        time_left = (datetime.now() - data_dict["active_time_tickets"]['validity_period']).total_seconds()
+                        end_datetimes = [datetime.strptime(entry['end_datetime'], "%Y-%m-%d %H:%M:%S") for entry in data_dict["active_time_tickets"]]
+                        time_left = (max(end_datetimes) - datetime.now()).total_seconds()
                         minutes, seconds = divmod(time_left, 60)
-                        extra_text = f"Aktywny bilet czasowy pozostalo: {minutes} minut {seconds} sekund"
+                        minutes = int(minutes)
+                        seconds = int(seconds)
+                        extra_text = f"Czasowy:\n{minutes}m {seconds}s"
                     elif data_dict.get("active_course_tickets"):
-                        extra_text = "Aktywny bilet jednorazowy "
+                        extra_text = "Jednorazowy "
+                    else:
+                        success = False
 
             param = {
                 "message": message,
